@@ -5,6 +5,9 @@
 .env.local
 # .env.*.local puede contener configuraciones específicas para otros entornos
 .env.*.local
+# Archivos de configuración del sistema operativo que no son relevantes para el proyecto
+Thumbs.db
+.DS_Store
 # Archivos de configuración de Docker Compose que pueden contener variables de entorno
 docker-compose.override.yml
 docker-compose.*.yml
