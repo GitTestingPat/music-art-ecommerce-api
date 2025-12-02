@@ -1,0 +1,112 @@
+# Environment variables
+# Ignora este archivo para evitar subir información sensible al repositorio
+.env
+# .env.local puede contener configuraciones específicas para el entorno local
+.env.local
+# .env.*.local puede contener configuraciones específicas para otros entornos
+.env.*.local
+# Archivos de configuración de Docker Compose que pueden contener variables de entorno
+docker-compose.override.yml
+docker-compose.*.yml
+# Archivos de configuración de Kubernetes que pueden contener variables de entorno
+k8s/*.yaml
+k8s/*.yml
+# Archivos de configuración de CI/CD que pueden contener variables de entorno
+.ci/*.yml
+.ci/*.yaml
+.cicd/*.yml
+.cicd/*.yaml
+# Archivos de configuración de servicios en la nube que pueden contener variables de entorno
+.cloud/*.yml
+.cloud/*.yaml
+.cloud/*.json
+.cloud/*.env
+# Archivos de configuración de herramientas de desarrollo que pueden contener variables de entorno
+.vscode/settings.json
+.idea/workspace.xml
+.idea/*.iml
+# Archivos de configuración de pruebas que pueden contener variables de entorno
+tests/.env
+tests/.env.local
+tests/.env.*.local
+# Archivos de configuración de scripts que pueden contener variables de entorno
+scripts/.env
+scripts/.env.local
+scripts/.env.*.local    
+# Archivos de configuración de dependencias que pueden contener variables de entorno
+package.json.env
+yarn.lock.env
+pnpm-lock.yaml.env
+# Archivos de configuración de herramientas de construcción que pueden contener variables de entorno
+webpack.config.env.js
+rollup.config.env.js
+gulpfile.env.js
+gruntfile.env.js
+# Archivos de configuración de servicios externos que pueden contener variables de entorno
+aws-exports.env.js
+firebase-config.env.js
+# Archivos de configuración de contenedores que pueden contener variables de entorno
+Dockerfile.env
+docker-compose.env.yml
+# Archivos de configuración de orquestadores que pueden contener variables de entorno
+kubernetes.env.yaml
+helm-values.env.yaml
+# Archivos de configuración de monitoreo que pueden contener variables de entorno
+prometheus.env.yml
+grafana.env.ini
+# Archivos de configuración de seguridad que pueden contener variables de entorno
+vault.env.yml
+# Archivos de configuración de análisis que pueden contener variables de entorno
+sentry.env.yml
+# Archivos de configuración de documentación que pueden contener variables de entorno
+docs/.env   
+docs/.env.local
+docs/.env.*.local
+# Archivos de configuración de localización que pueden contener variables de entorno
+locales/.env
+locales/.env.local
+locales/.env.*.local
+# Archivos de configuración de migraciones que pueden contener variables de entorno
+migrations/.env
+migrations/.env.local
+migrations/.env.*.local
+# Archivos de configuración de seeds que pueden contener variables de entorno
+seeds/.env
+seeds/.env.local
+seeds/.env.*.local
+# Archivos de configuración de documentación que pueden contener variables de entorno
+docs/.env
+docs/.env.local
+docs/.env.*.local
+# Archivos de configuración de localización que pueden contener variables de entorno
+locales/.env
+locales/.env.local
+locales/.env.*.local
+# Archivos de configuración de migraciones que pueden contener variables de entorno
+migrations/.env
+migrations/.env.local
+migrations/.env.*.local
+# Archivos de configuración de seeds que pueden contener variables de entorno
+seeds/.env
+seeds/.env.local
+seeds/.env.*.local  
+# Archivos de configuración de backups que pueden contener variables de entorno
+backups/.env
+backups/.env.local
+backups/.env.*.local    
+# Archivos de configuración de integraciones que pueden contener variables de entorno
+integrations/.env
+integrations/.env.local
+integrations/.env.*.local   
+# Archivos de configuración de despliegue que pueden contener variables de entorno
+deploy/.env
+deploy/.env.local
+deploy/.env.*.local
+# Archivos de configuración de análisis estático que pueden contener variables de entorno
+static-analysis/.env
+static-analysis/.env.local
+static-analysis/.env.*.local
+# Archivos de configuración de generación de código que pueden contener variables de entorno
+codegen/.env
+codegen/.env.local
+codegen/.env.*.local
