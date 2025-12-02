@@ -113,3 +113,5 @@ static-analysis/.env.*.local
 codegen/.env
 codegen/.env.local
 codegen/.env.*.local
+# Archivos de configuración de cargas que contienen imagenes
+uploads
