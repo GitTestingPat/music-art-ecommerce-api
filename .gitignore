@@ -115,3 +115,17 @@ codegen/.env.local
 codegen/.env.*.local
 # Archivos de configuración de cargas que contienen imagenes
 uploads
+
+# Dependencias y archivos de construcción
+.idea/
+.vscode/
+node_modules/
+dist/
+build/
+.cache/
+coverage/
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
