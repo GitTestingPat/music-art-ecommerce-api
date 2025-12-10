@@ -25,29 +25,49 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 const authRouter = require('./routes/auth');
 const productsRouter = require('./routes/products');
 const ordersRouter = require('./routes/orders');
+const cartRouter = require('./routes/cart');
+const reviewsRouter = require('./routes/reviews');
+const couponsRouter = require('./routes/coupons');
+const dashboardRouter = require('./routes/dashboard');
+const wishlistRouter = require('./routes/wishlist');
 
 app.use('/api/auth', authRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/orders', ordersRouter);
+app.use('/api/cart', cartRouter);
+app.use('/api/reviews', reviewsRouter);
+app.use('/api/coupons', couponsRouter);
+app.use('/api/dashboard', dashboardRouter);
+app.use('/api/wishlist', wishlistRouter);
 
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
     message: '🎸 Bienvenido a la API de E-commerce de Instrumentos Musicales, Libros y Arte',
-    version: '2.0.0',
+    version: '3.0.0',
     features: [
       '✅ Autenticación JWT',
       '✅ Base de datos MySQL',
       '✅ Paginación',
       '✅ Búsqueda de texto',
       '✅ Manejo de imágenes',
-      '✅ Documentación Swagger'
+      '✅ Carrito de compras',
+      '✅ Sistema de reviews y calificaciones',
+      '✅ Cupones de descuento',
+      '✅ Dashboard de administrador',
+      '✅ Lista de deseos (Wishlist)',
+      '✅ Documentación Swagger completa'
     ],
     documentation: `http://localhost:${PORT}/api-docs`,
     endpoints: {
       auth: `http://localhost:${PORT}/api/auth`,
       products: `http://localhost:${PORT}/api/products`,
-      orders: `http://localhost:${PORT}/api/orders`
+      orders: `http://localhost:${PORT}/api/orders`,
+      cart: `http://localhost:${PORT}/api/cart`,
+      reviews: `http://localhost:${PORT}/api/reviews`,
+      coupons: `http://localhost:${PORT}/api/coupons`,
+      dashboard: `http://localhost:${PORT}/api/dashboard`,
+      wishlist: `http://localhost:${PORT}/api/wishlist`
     }
   });
 });
@@ -56,8 +76,6 @@ app.get('/', (req, res) => {
 const startServer = async () => {
   try {
     // Sincronizar modelos con la base de datos
-    // alter: true actualiza las tablas sin borrar datos
-    // force: true ELIMINA y recrea las tablas (usar solo en desarrollo)
     await sequelize.sync({ alter: true });
     console.log('✅ Base de datos sincronizada');
     
@@ -67,6 +85,12 @@ const startServer = async () => {
       console.log(`📚 Documentación Swagger en http://localhost:${PORT}/api-docs`);
       console.log(`📦 Base de datos: ${process.env.DB_NAME}`);
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('\n🎯 Nuevas Funcionalidades:');
+      console.log('  🛒 Carrito de compras');
+      console.log('  ⭐ Sistema de reviews');
+      console.log('  🎫 Cupones de descuento');
+      console.log('  📊 Dashboard de admin');
+      console.log('  ❤️  Lista de deseos');
       console.log('\n🔑 Para empezar:');
       console.log('1. Registra un usuario en /api/auth/register');
       console.log('2. Inicia sesión en /api/auth/login');
