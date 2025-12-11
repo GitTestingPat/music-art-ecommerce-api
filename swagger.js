@@ -5,7 +5,7 @@ const options = {
     openapi: '3.0.0',
     info: {
       title: 'API E-commerce Instrumentos Musicales, Libros y Arte',
-      version: '2.0.0',
+      version: '3.0.0',
       description: `
         API RESTful completa para tienda online con:
         - 🔐 Autenticación JWT
@@ -13,6 +13,11 @@ const options = {
         - 📄 Paginación
         - 🔍 Búsqueda de texto
         - 📸 Manejo de imágenes
+        - 🛒 Carrito de compras
+        - ⭐ Sistema de reviews y calificaciones
+        - 🎫 Cupones de descuento
+        - 📊 Dashboard de administrador con estadísticas
+        - ❤️ Lista de deseos (Wishlist)
       `,
       contact: {
         name: 'Soporte API',
@@ -142,6 +147,85 @@ const options = {
               description: 'Rol del usuario'
             }
           }
+        },
+        Review: {
+          type: 'object',
+          required: ['productId', 'rating'],
+          properties: {
+            id: {
+              type: 'integer'
+            },
+            userId: {
+              type: 'integer'
+            },
+            productId: {
+              type: 'integer'
+            },
+            rating: {
+              type: 'integer',
+              minimum: 1,
+              maximum: 5,
+              description: 'Calificación de 1 a 5 estrellas'
+            },
+            title: {
+              type: 'string',
+              description: 'Título de la review'
+            },
+            comment: {
+              type: 'string',
+              description: 'Comentario detallado'
+            },
+            verified: {
+              type: 'boolean',
+              description: 'Indica si el usuario compró el producto'
+            },
+            helpful: {
+              type: 'integer',
+              description: 'Cantidad de personas que encontraron útil la review'
+            }
+          }
+        },
+        Coupon: {
+          type: 'object',
+          required: ['code', 'discountType', 'discountValue'],
+          properties: {
+            id: {
+              type: 'integer'
+            },
+            code: {
+              type: 'string',
+              description: 'Código del cupón (mayúsculas)',
+              example: 'VERANO2024'
+            },
+            description: {
+              type: 'string',
+              description: 'Descripción del cupón'
+            },
+            discountType: {
+              type: 'string',
+              enum: ['percentage', 'fixed'],
+              description: 'Tipo de descuento'
+            },
+            discountValue: {
+              type: 'number',
+              description: 'Valor del descuento (% o monto fijo)'
+            },
+            minPurchase: {
+              type: 'number',
+              description: 'Monto mínimo de compra'
+            },
+            validFrom: {
+              type: 'string',
+              format: 'date-time'
+            },
+            validUntil: {
+              type: 'string',
+              format: 'date-time'
+            },
+            isActive: {
+              type: 'boolean'
+            }
+          }
         }
       }
     },
@@ -157,6 +241,26 @@ const options = {
       {
         name: 'Órdenes',
         description: 'Gestión de órdenes de compra'
+      },
+      {
+        name: 'Carrito',
+        description: 'Gestión del carrito de compras'
+      },
+      {
+        name: 'Reviews',
+        description: 'Sistema de calificaciones y comentarios'
+      },
+      {
+        name: 'Cupones',
+        description: 'Gestión de cupones de descuento'
+      },
+      {
+        name: 'Dashboard',
+        description: 'Estadísticas y reportes para administradores'
+      },
+      {
+        name: 'Wishlist',
+        description: 'Lista de deseos de productos'
       }
     ]
   },
