@@ -1,27 +1,70 @@
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
-const cors = require('cors');
-const swaggerUi = require('swagger-ui-express');
-const swaggerSpec = require('./swagger');
 const path = require('path');
 const sequelize = require('./config/database');
 
+// Importar configuración de seguridad
+const { 
+  helmetConfig, 
+  corsConfig, 
+  corsConfigDev, 
+  additionalSecurity,
+  validateContentType 
+} = require('./config/security');
+
+const { 
+  developmentLogger, 
+  productionLogger,
+  errorLogger,
+  safeErrorResponse
+} = require('./config/logger');
+
+const { generalLimiter } = require('./middleware/rateLimiter');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
+const isProduction = process.env.NODE_ENV === 'production';
 
-// Middleware
-app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+// ==================== SEGURIDAD ====================
+
+// 1. Helmet - Headers de seguridad
+app.use(helmetConfig);
+
+// 2. CORS - Control de acceso
+app.use(isProduction ? corsConfig : corsConfigDev);
+
+// 3. Rate Limiting - Prevención de ataques de fuerza bruta
+app.use(generalLimiter);
+
+// 4. Logger - Registro seguro de peticiones
+app.use(isProduction ? productionLogger : developmentLogger);
+
+// 5. Seguridad adicional
+app.use(additionalSecurity);
+app.use(validateContentType);
+
+// ==================== MIDDLEWARE BÁSICO ====================
+
+app.use(bodyParser.json({ limit: '10mb' })); // Limitar tamaño de JSON
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
 // Servir archivos estáticos (imágenes subidas)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Swagger Documentation
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// ==================== SWAGGER DOCUMENTATION ====================
 
-// Routes
+// Swagger debe ir DESPUÉS de helmet pero con configuración especial
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./swagger');
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: "API E-commerce - Documentación"
+}));
+
+// ==================== ROUTES ====================
+
 const authRouter = require('./routes/auth');
 const productsRouter = require('./routes/products');
 const ordersRouter = require('./routes/orders');
@@ -40,11 +83,20 @@ app.use('/api/coupons', couponsRouter);
 app.use('/api/dashboard', dashboardRouter);
 app.use('/api/wishlist', wishlistRouter);
 
-// Root endpoint
+// ==================== ROOT ENDPOINT ====================
+
 app.get('/', (req, res) => {
   res.json({
-    message: '🎸 Bienvenido a la API de E-commerce de Instrumentos Musicales, Libros y Arte',
+    message: '🎸 API E-commerce - Instrumentos Musicales, Libros y Arte',
     version: '3.0.0',
+    environment: isProduction ? 'production' : 'development',
+    security: {
+      rateLimit: 'activo',
+      helmet: 'activo',
+      cors: isProduction ? 'restringido' : 'permisivo',
+      validation: 'activo',
+      logging: 'activo'
+    },
     features: [
       '✅ Autenticación JWT',
       '✅ Base de datos MySQL',
@@ -56,7 +108,11 @@ app.get('/', (req, res) => {
       '✅ Cupones de descuento',
       '✅ Dashboard de administrador',
       '✅ Lista de deseos (Wishlist)',
-      '✅ Documentación Swagger completa'
+      '🔒 Rate Limiting',
+      '🔒 Validación de inputs',
+      '🔒 Headers de seguridad (Helmet)',
+      '🔒 CORS configurado',
+      '🔒 Logging seguro'
     ],
     documentation: `http://localhost:${PORT}/api-docs`,
     endpoints: {
@@ -72,7 +128,34 @@ app.get('/', (req, res) => {
   });
 });
 
-// Sincronizar base de datos e iniciar servidor
+// Health check endpoint (sin rate limit)
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
+// ==================== ERROR HANDLING ====================
+
+// Middleware para manejar rutas no encontradas
+app.use((req, res, next) => {
+  res.status(404).json({
+    error: 'Endpoint no encontrado',
+    message: `La ruta ${req.method} ${req.url} no existe`,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Logger de errores
+app.use(errorLogger);
+
+// Respuestas de error seguras
+app.use(safeErrorResponse);
+
+// ==================== START SERVER ====================
+
 const startServer = async () => {
   try {
     // Sincronizar modelos con la base de datos
@@ -84,8 +167,15 @@ const startServer = async () => {
       console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
       console.log(`📚 Documentación Swagger en http://localhost:${PORT}/api-docs`);
       console.log(`📦 Base de datos: ${process.env.DB_NAME}`);
+      console.log(`🔒 Modo: ${isProduction ? 'PRODUCTION' : 'DEVELOPMENT'}`);
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-      console.log('\n🎯 Nuevas Funcionalidades:');
+      console.log('\n🔒 Seguridad Activada:');
+      console.log('  ✅ Rate Limiting (previene ataques de fuerza bruta)');
+      console.log('  ✅ Helmet (headers de seguridad HTTP)');
+      console.log('  ✅ CORS configurado (control de orígenes)');
+      console.log('  ✅ Validación de inputs (previene XSS e inyecciones)');
+      console.log('  ✅ Logging seguro (sin exponer datos sensibles)');
+      console.log('\n🎯 Funcionalidades:');
       console.log('  🛒 Carrito de compras');
       console.log('  ⭐ Sistema de reviews');
       console.log('  🎫 Cupones de descuento');
@@ -95,6 +185,11 @@ const startServer = async () => {
       console.log('1. Registra un usuario en /api/auth/register');
       console.log('2. Inicia sesión en /api/auth/login');
       console.log('3. Usa el token en el header: Authorization: Bearer <token>');
+      console.log('\n⚠️  Rate Limits:');
+      console.log('  - General: 100 requests / 15 min');
+      console.log('  - Login: 5 intentos / 15 min');
+      console.log('  - Creación: 50 / hora');
+      console.log('  - Uploads: 10 / hora');
       console.log('\n');
     });
   } catch (error) {
