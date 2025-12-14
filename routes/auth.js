@@ -3,6 +3,8 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const { User } = require('../models');
 const { authMiddleware } = require('../middleware/auth');
+const { authLimiter } = require('../middleware/rateLimiter');
+const { validateRegister, validateLogin } = require('../middleware/validators');
 
 /**
  * @swagger
