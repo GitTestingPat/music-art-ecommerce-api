@@ -42,7 +42,7 @@ const { validateRegister, validateLogin } = require('../middleware/validators');
  *       400:
  *         description: Email ya registrado o datos inválidos
  */
-router.post('/register', async (req, res) => {
+router.post('/register', authLimiter, validateRegister, async (req, res) => {
   try {
     const { email, password, name, address, phone } = req.body;
     
@@ -127,7 +127,7 @@ router.post('/register', async (req, res) => {
  *       401:
  *         description: Credenciales inválidas
  */
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, validateLogin, async (req, res) => {
   try {
     const { email, password } = req.body;
     
