@@ -139,6 +139,31 @@ Accede a la documentación interactiva Swagger en:
 http://localhost:3000/api-docs
 ```
 
+## 📄 Contrato de la API (OpenAPI)
+
+La especificación completa de la API está disponible en formato OpenAPI 3.0:
+
+- **JSON:** [`docs/openapi.json`](docs/openapi.json)
+- **YAML:** [`docs/openapi.yaml`](docs/openapi.yaml)
+- **Documentación:** [`docs/README.md`](docs/README.md)
+
+### 📥 Importar en herramientas de testing:
+
+**Postman:**
+1. Import → Upload Files → Selecciona `docs/openapi.json`
+
+**Insomnia:**
+1. Create → Import from File → Selecciona `docs/openapi.json`
+
+**Swagger Editor:**
+1. Abre https://editor.swagger.io/
+2. File → Import File → Selecciona `docs/openapi.json`
+
+### 🔄 Regenerar contrato:
+```bash
+npm run generate-contract
+```
+
 ## 🔑 Credenciales de Prueba
 
 **Administrador:**

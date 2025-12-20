@@ -1,0 +1,1130 @@
+openapi: 3.0.0
+info:
+  title: API E-commerce Instrumentos Musicales, Libros y Arte
+  version: 3.0.0
+  description: |2-
+
+            API RESTful completa para tienda online con:
+            - 🔐 Autenticación JWT
+            - 🗄️ Base de datos MySQL
+            - 📄 Paginación
+            - 🔍 Búsqueda de texto
+            - 📸 Manejo de imágenes
+            - 🛒 Carrito de compras
+            - ⭐ Sistema de reviews y calificaciones
+            - 🎫 Cupones de descuento
+            - 📊 Dashboard de administrador con estadísticas
+            - ❤️ Lista de deseos (Wishlist)
+          
+  contact:
+    name: Soporte API
+    email: soporte@musicartstore.com
+servers:
+  - url: http://localhost:3000
+    description: Servidor de desarrollo
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Ingresa el token JWT obtenido al iniciar sesión
+  schemas:
+    Product:
+      type: object
+      required:
+        - name
+        - category
+        - price
+        - stock
+      properties:
+        id:
+          type: integer
+          description: ID único del producto
+        name:
+          type: string
+          description: Nombre del producto
+          example: Guitarra Acústica Yamaha FG800
+        category:
+          type: string
+          enum:
+            - instrumento
+            - libro
+            - arte
+          description: Categoría del producto
+        subcategory:
+          type: string
+          description: Subcategoría específica
+          example: cuerda
+        price:
+          type: number
+          format: float
+          description: Precio en USD
+          example: 299.99
+        stock:
+          type: integer
+          description: Cantidad disponible en inventario
+          example: 15
+        description:
+          type: string
+          description: Descripción detallada del producto
+        brand:
+          type: string
+          description: Marca del producto
+          example: Yamaha
+        image:
+          type: string
+          description: URL de la imagen del producto
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID único de la orden
+        userId:
+          type: integer
+          description: ID del usuario que realizó la orden
+        total:
+          type: number
+          format: float
+          description: Monto total de la orden
+        status:
+          type: string
+          enum:
+            - pending
+            - processing
+            - shipped
+            - delivered
+            - cancelled
+          description: Estado de la orden
+        createdAt:
+          type: string
+          format: date-time
+    User:
+      type: object
+      required:
+        - email
+        - name
+      properties:
+        id:
+          type: integer
+          description: ID único del usuario
+        email:
+          type: string
+          format: email
+          description: Email del usuario
+        name:
+          type: string
+          description: Nombre completo
+        address:
+          type: string
+          description: Dirección de envío
+        phone:
+          type: string
+          description: Teléfono de contacto
+        role:
+          type: string
+          enum:
+            - user
+            - admin
+          description: Rol del usuario
+    Review:
+      type: object
+      required:
+        - productId
+        - rating
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        productId:
+          type: integer
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: Calificación de 1 a 5 estrellas
+        title:
+          type: string
+          description: Título de la review
+        comment:
+          type: string
+          description: Comentario detallado
+        verified:
+          type: boolean
+          description: Indica si el usuario compró el producto
+        helpful:
+          type: integer
+          description: Cantidad de personas que encontraron útil la review
+    Coupon:
+      type: object
+      required:
+        - code
+        - discountType
+        - discountValue
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+          description: Código del cupón (mayúsculas)
+          example: VERANO2024
+        description:
+          type: string
+          description: Descripción del cupón
+        discountType:
+          type: string
+          enum:
+            - percentage
+            - fixed
+          description: Tipo de descuento
+        discountValue:
+          type: number
+          description: Valor del descuento (% o monto fijo)
+        minPurchase:
+          type: number
+          description: Monto mínimo de compra
+        validFrom:
+          type: string
+          format: date-time
+        validUntil:
+          type: string
+          format: date-time
+        isActive:
+          type: boolean
+tags:
+  - name: Autenticación
+    description: Endpoints para registro, login y gestión de sesión
+  - name: Productos
+    description: CRUD de productos con búsqueda y filtros
+  - name: Órdenes
+    description: Gestión de órdenes de compra
+  - name: Carrito
+    description: Gestión del carrito de compras
+  - name: Reviews
+    description: Sistema de calificaciones y comentarios
+  - name: Cupones
+    description: Gestión de cupones de descuento
+  - name: Dashboard
+    description: Estadísticas y reportes para administradores
+  - name: Wishlist
+    description: Lista de deseos de productos
+paths:
+  /api/auth/register:
+    post:
+      summary: Registrar un nuevo usuario
+      tags:
+        - Autenticación
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - name
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+                  minLength: 6
+                name:
+                  type: string
+                address:
+                  type: string
+                phone:
+                  type: string
+      responses:
+        '201':
+          description: Usuario registrado exitosamente
+        '400':
+          description: Email ya registrado o datos inválidos
+  /api/auth/login:
+    post:
+      summary: Iniciar sesión
+      tags:
+        - Autenticación
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: Login exitoso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+        '401':
+          description: Credenciales inválidas
+  /api/auth/me:
+    get:
+      summary: Obtener información del usuario autenticado
+      tags:
+        - Autenticación
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Información del usuario
+        '401':
+          description: No autenticado
+  /api/cart:
+    get:
+      summary: Obtener el carrito del usuario actual
+      tags:
+        - Carrito
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Carrito del usuario
+  /api/cart/items:
+    post:
+      summary: Agregar producto al carrito
+      tags:
+        - Carrito
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                productId:
+                  type: integer
+                quantity:
+                  type: integer
+                  default: 1
+      responses:
+        '200':
+          description: Producto agregado al carrito
+  /api/cart/items/{itemId}:
+    put:
+      summary: Actualizar cantidad de un item en el carrito
+      tags:
+        - Carrito
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: itemId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: integer
+      responses:
+        '200':
+          description: Cantidad actualizada
+    delete:
+      summary: Eliminar un item del carrito
+      tags:
+        - Carrito
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: itemId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Item eliminado
+  /api/cart/clear:
+    delete:
+      summary: Vaciar el carrito
+      tags:
+        - Carrito
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Carrito vaciado
+  /api/coupons:
+    get:
+      summary: Listar cupones (solo admin)
+      tags:
+        - Cupones
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de cupones
+    post:
+      summary: Crear un cupón (solo admin)
+      tags:
+        - Cupones
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - code
+                - discountType
+                - discountValue
+              properties:
+                code:
+                  type: string
+                description:
+                  type: string
+                discountType:
+                  type: string
+                  enum:
+                    - percentage
+                    - fixed
+                discountValue:
+                  type: number
+                minPurchase:
+                  type: number
+                maxDiscount:
+                  type: number
+                usageLimit:
+                  type: integer
+                perUserLimit:
+                  type: integer
+                validFrom:
+                  type: string
+                  format: date-time
+                validUntil:
+                  type: string
+                  format: date-time
+                applicableCategories:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Cupón creado
+  /api/coupons/validate:
+    post:
+      summary: Validar un cupón
+      tags:
+        - Cupones
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - code
+                - amount
+              properties:
+                code:
+                  type: string
+                amount:
+                  type: number
+                categories:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Cupón válido con descuento calculado
+  /api/coupons/{id}:
+    put:
+      summary: Actualizar un cupón (solo admin)
+      tags:
+        - Cupones
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Cupón actualizado
+    delete:
+      summary: Eliminar un cupón (solo admin)
+      tags:
+        - Cupones
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Cupón eliminado
+  /api/dashboard/stats:
+    get:
+      summary: Obtener estadísticas generales (solo admin)
+      tags:
+        - Dashboard
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Estadísticas del e-commerce
+  /api/dashboard/sales:
+    get:
+      summary: Obtener reporte de ventas (solo admin)
+      tags:
+        - Dashboard
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: period
+          schema:
+            type: string
+            enum:
+              - day
+              - week
+              - month
+              - year
+            default: month
+      responses:
+        '200':
+          description: Reporte de ventas
+  /api/dashboard/inventory:
+    get:
+      summary: Reporte de inventario (solo admin)
+      tags:
+        - Dashboard
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Reporte de inventario
+  /api/dashboard/customers:
+    get:
+      summary: Reporte de clientes (solo admin)
+      tags:
+        - Dashboard
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Reporte de clientes
+  /api/orders:
+    get:
+      summary: Obtener órdenes (admin ve todas, usuario ve solo las suyas)
+      tags:
+        - Órdenes
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum:
+              - pending
+              - processing
+              - shipped
+              - delivered
+              - cancelled
+      responses:
+        '200':
+          description: Lista de órdenes
+    post:
+      summary: Crear una nueva orden
+      tags:
+        - Órdenes
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - items
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      productId:
+                        type: integer
+                      quantity:
+                        type: integer
+      responses:
+        '201':
+          description: Orden creada exitosamente
+  /api/orders/{id}:
+    get:
+      summary: Obtener una orden por ID
+      tags:
+        - Órdenes
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Orden encontrada
+        '404':
+          description: Orden no encontrada
+    delete:
+      summary: Cancelar una orden
+      tags:
+        - Órdenes
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Orden cancelada
+  /api/orders/{id}/status:
+    patch:
+      summary: Actualizar estado de orden (solo admin)
+      tags:
+        - Órdenes
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum:
+                    - pending
+                    - processing
+                    - shipped
+                    - delivered
+                    - cancelled
+      responses:
+        '200':
+          description: Estado actualizado
+  /api/products:
+    get:
+      summary: Obtener productos con paginación y búsqueda
+      tags:
+        - Productos
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Número de página
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+          description: Cantidad de productos por página
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Buscar por nombre, descripción o marca
+        - in: query
+          name: category
+          schema:
+            type: string
+            enum:
+              - instrumento
+              - libro
+              - arte
+          description: Filtrar por categoría
+        - in: query
+          name: minPrice
+          schema:
+            type: number
+          description: Precio mínimo
+        - in: query
+          name: maxPrice
+          schema:
+            type: number
+          description: Precio máximo
+      responses:
+        '200':
+          description: Lista paginada de productos
+    post:
+      summary: Crear un nuevo producto (requiere autenticación de admin)
+      tags:
+        - Productos
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        '201':
+          description: Producto creado exitosamente
+        '401':
+          description: No autenticado
+        '403':
+          description: Sin permisos de administrador
+  /api/products/{id}:
+    get:
+      summary: Obtener un producto por ID
+      tags:
+        - Productos
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID del producto
+      responses:
+        '200':
+          description: Producto encontrado
+        '404':
+          description: Producto no encontrado
+    put:
+      summary: Actualizar un producto (requiere autenticación de admin)
+      tags:
+        - Productos
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID del producto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        '200':
+          description: Producto actualizado
+        '404':
+          description: Producto no encontrado
+    delete:
+      summary: Eliminar un producto (requiere autenticación de admin)
+      tags:
+        - Productos
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID del producto
+      responses:
+        '200':
+          description: Producto eliminado
+        '404':
+          description: Producto no encontrado
+  /api/products/{id}/upload-image:
+    post:
+      summary: Subir imagen de producto (requiere autenticación de admin)
+      tags:
+        - Productos
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID del producto
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: Archivo de imagen (jpeg, jpg, png, gif, webp, máx 5MB)
+      responses:
+        '200':
+          description: Imagen subida exitosamente
+        '400':
+          description: Error en el archivo
+        '404':
+          description: Producto no encontrado
+  /api/reviews/product/{productId}:
+    get:
+      summary: Obtener reviews de un producto
+      tags:
+        - Reviews
+      parameters:
+        - in: path
+          name: productId
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Lista de reviews
+  /api/reviews:
+    post:
+      summary: Crear una review
+      tags:
+        - Reviews
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - productId
+                - rating
+              properties:
+                productId:
+                  type: integer
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                title:
+                  type: string
+                comment:
+                  type: string
+      responses:
+        '201':
+          description: Review creada
+  /api/reviews/{id}:
+    put:
+      summary: Actualizar una review propia
+      tags:
+        - Reviews
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rating:
+                  type: integer
+                title:
+                  type: string
+                comment:
+                  type: string
+      responses:
+        '200':
+          description: Review actualizada
+    delete:
+      summary: Eliminar una review propia
+      tags:
+        - Reviews
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Review eliminada
+  /api/reviews/{id}/helpful:
+    post:
+      summary: Marcar review como útil
+      tags:
+        - Reviews
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Review marcada como útil
+  /api/users:
+    get:
+      summary: Obtener todos los usuarios
+      tags:
+        - Usuarios
+      responses:
+        '200':
+          description: Lista de usuarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    post:
+      summary: Registrar un nuevo usuario
+      tags:
+        - Usuarios
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - name
+              properties:
+                email:
+                  type: string
+                  format: email
+                name:
+                  type: string
+                address:
+                  type: string
+                phone:
+                  type: string
+      responses:
+        '201':
+          description: Usuario creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Email ya registrado
+  /api/users/{id}:
+    get:
+      summary: Obtener un usuario por ID
+      tags:
+        - Usuarios
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID del usuario
+      responses:
+        '200':
+          description: Usuario encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Usuario no encontrado
+    put:
+      summary: Actualizar información de usuario
+      tags:
+        - Usuarios
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID del usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: Usuario actualizado
+        '404':
+          description: Usuario no encontrado
+    delete:
+      summary: Eliminar un usuario
+      tags:
+        - Usuarios
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID del usuario
+      responses:
+        '200':
+          description: Usuario eliminado
+        '404':
+          description: Usuario no encontrado
+  /api/wishlist:
+    get:
+      summary: Obtener wishlist del usuario
+      tags:
+        - Wishlist
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de productos deseados
+    post:
+      summary: Agregar producto a wishlist
+      tags:
+        - Wishlist
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - productId
+              properties:
+                productId:
+                  type: integer
+                notifyOnDiscount:
+                  type: boolean
+                  default: false
+                notifyOnStock:
+                  type: boolean
+                  default: false
+      responses:
+        '201':
+          description: Producto agregado a wishlist
+  /api/wishlist/{id}:
+    delete:
+      summary: Eliminar producto de wishlist
+      tags:
+        - Wishlist
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Producto eliminado de wishlist
+  /api/wishlist/{id}/notifications:
+    patch:
+      summary: Actualizar notificaciones de un item
+      tags:
+        - Wishlist
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                notifyOnDiscount:
+                  type: boolean
+                notifyOnStock:
+                  type: boolean
+      responses:
+        '200':
+          description: Notificaciones actualizadas
+  /api/wishlist/clear:
+    delete:
+      summary: Vaciar wishlist completa
+      tags:
+        - Wishlist
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Wishlist vaciada
