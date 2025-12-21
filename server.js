@@ -46,7 +46,7 @@ app.use(validateContentType);
 
 // ==================== MIDDLEWARE BÁSICO ====================
 
-app.use(bodyParser.json({ limit: '10mb' })); // Limitar tamaño de JSON
+app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
 // Servir archivos estáticos (imágenes subidas)
@@ -54,7 +54,6 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ==================== SWAGGER DOCUMENTATION ====================
 
-// Swagger debe ir DESPUÉS de helmet pero con configuración especial
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./swagger');
 
@@ -90,6 +89,12 @@ app.get('/', (req, res) => {
     message: '🎸 API E-commerce - Instrumentos Musicales, Libros y Arte',
     version: '3.0.0',
     environment: isProduction ? 'production' : 'development',
+    contract: {
+      openapi_json: `http://localhost:${PORT}/openapi.json`,
+      openapi_yaml: `http://localhost:${PORT}/openapi.yaml`,
+      swagger_ui: `http://localhost:${PORT}/api-docs`,
+      swagger_json: `http://localhost:${PORT}/api-docs.json`
+    },
     security: {
       rateLimit: 'activo',
       helmet: 'activo',
@@ -128,13 +133,36 @@ app.get('/', (req, res) => {
   });
 });
 
-// Health check endpoint (sin rate limit)
+// Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ 
     status: 'OK',
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
   });
+});
+
+// ==================== OPENAPI CONTRACT ENDPOINTS ====================
+
+// Endpoint para descargar el contrato en JSON
+app.get('/openapi.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Content-Disposition', 'inline; filename="openapi.json"');
+  res.json(swaggerSpec);
+});
+
+// Endpoint para descargar el contrato en YAML
+app.get('/openapi.yaml', (req, res) => {
+  const yaml = require('js-yaml');
+  res.setHeader('Content-Type', 'text/yaml');
+  res.setHeader('Content-Disposition', 'inline; filename="openapi.yaml"');
+  res.send(yaml.dump(swaggerSpec));
+});
+
+// Endpoint alternativo (estándar)
+app.get('/api-docs.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.json(swaggerSpec);
 });
 
 // ==================== ERROR HANDLING ====================
@@ -158,7 +186,6 @@ app.use(safeErrorResponse);
 
 const startServer = async () => {
   try {
-    // Sincronizar modelos con la base de datos
     await sequelize.sync({ alter: true });
     console.log('✅ Base de datos sincronizada');
     
@@ -166,6 +193,7 @@ const startServer = async () => {
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
       console.log(`📚 Documentación Swagger en http://localhost:${PORT}/api-docs`);
+      console.log(`📄 Contrato OpenAPI: http://localhost:${PORT}/openapi.json`);
       console.log(`📦 Base de datos: ${process.env.DB_NAME}`);
       console.log(`🔒 Modo: ${isProduction ? 'PRODUCTION' : 'DEVELOPMENT'}`);
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
