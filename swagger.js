@@ -7,21 +7,106 @@ const options = {
       title: 'API E-commerce Instrumentos Musicales, Libros y Arte',
       version: '3.0.0',
       description: `
-        API RESTful completa para tienda online con:
-        - 🔐 Autenticación JWT
-        - 🗄️ Base de datos MySQL
-        - 📄 Paginación
-        - 🔍 Búsqueda de texto
-        - 📸 Manejo de imágenes
-        - 🛒 Carrito de compras
-        - ⭐ Sistema de reviews y calificaciones
-        - 🎫 Cupones de descuento
-        - 📊 Dashboard de administrador con estadísticas
-        - ❤️ Lista de deseos (Wishlist)
+API RESTful completa para tienda online desarrollada como proyecto de entrenamiento en Testing y QA.
+
+## Funcionalidades
+
+**Autenticación y Seguridad:**
+- Autenticación JWT con tokens de 7 días
+- Rate limiting para prevenir ataques
+- Validación de inputs
+- Encriptación de passwords con bcrypt
+
+**Gestión de Productos:**
+- CRUD completo de productos
+- Búsqueda y filtrado avanzado
+- Paginación de resultados
+- Categorías: Instrumentos, Libros, Arte
+- Subida de imágenes
+
+**Carrito y Órdenes:**
+- Carrito de compras persistente
+- Gestión de órdenes
+- Validación de stock en tiempo real
+- Historial de compras
+
+**Sistema de Reviews:**
+- Calificaciones de 1 a 5 estrellas
+- Comentarios de usuarios
+- Reviews verificadas (solo compradores)
+- Sistema de votos útiles
+
+**Cupones de Descuento:**
+- Cupones por porcentaje o monto fijo
+- Restricciones por categoría
+- Límites de uso
+- Fechas de validez
+
+**Dashboard Administrativo:**
+- Estadísticas de ventas
+- Reportes de inventario
+- Análisis de clientes
+- Productos más vendidos
+
+**Lista de Deseos:**
+- Guardar productos favoritos
+- Notificaciones de stock y descuentos
+
+---
+
+## 📄 Descargar Contrato OpenAPI
+
+**Archivos disponibles:**
+
+- JSON: [http://localhost:3000/openapi.json](http://localhost:3000/openapi.json)
+- YAML: [http://localhost:3000/openapi.yaml](http://localhost:3000/openapi.yaml)
+
+**Importar en Postman:**
+\`\`\`
+Import → Link → http://localhost:3000/openapi.json
+\`\`\`
+
+**Importar en Insomnia:**
+\`\`\`
+Import → URL → http://localhost:3000/openapi.json
+\`\`\`
+
+**Ver en Swagger Editor:**
+[Abrir en editor online](https://editor.swagger.io/?url=http://localhost:3000/openapi.json)
+
+---
+
+## 🔐 Autenticación
+
+Esta API usa JWT (JSON Web Tokens). Para acceder a endpoints protegidos:
+
+1. Regístrate en \`POST /api/auth/register\`
+2. Inicia sesión en \`POST /api/auth/login\`
+3. Copia el token recibido
+4. Haz clic en el botón **"Authorize"** arriba
+5. Ingresa: \`Bearer TU_TOKEN\`
+
+**Usuarios de prueba:**
+- Admin: \`admin@musicart.com\` / \`admin123\`
+- Usuario: \`usuario@example.com\` / \`user123\`
+
+---
+
+## 📊 Especificación
+
+- **Versión API:** 3.0.0
+- **Especificación:** OpenAPI 3.0.0
+- **Servidor:** http://localhost:3000
+- **Propósito:** API de entrenamiento para Testing y QA
+- **Stack:** Node.js, Express, MySQL, Sequelize, JWT, Swagger
       `,
       contact: {
-        name: 'Soporte API',
-        email: 'soporte@musicartstore.com'
+        name: 'GitHub Repository',
+        url: 'https://github.com/tu-usuario/music-art-ecommerce-api'
+      },
+      license: {
+        name: 'MIT',
+        url: 'https://opensource.org/licenses/MIT'
       }
     },
     servers: [
@@ -61,7 +146,7 @@ const options = {
             subcategory: {
               type: 'string',
               description: 'Subcategoría específica',
-              example: 'cuerda'
+              example: 'guitarra-acustica'
             },
             price: {
               type: 'number',
